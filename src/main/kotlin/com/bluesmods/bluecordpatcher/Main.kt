@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.nio.file.*
-import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.system.exitProcess
 
@@ -33,7 +32,14 @@ object Main {
 
     private fun doWork(config: Config) {
         if (config.flags.createPatches && config.flags.quickMode) {
-            throw IllegalArgumentException("--patch and -q arguments cannot be used at the same time")
+            LOG.error("--patch and -q arguments cannot be used at the same time")
+            exitProcess(1)
+        }
+        if (config.flags.quickMode) {
+            if (!config.getCompiledApkFile().exists()) {
+                LOG.error("Quick mode cannot run, the previously built APK does not exist.")
+                exitProcess(1)
+            }
         }
 
         val holder = ExecutableLoader.load(config)
@@ -140,11 +146,6 @@ object Main {
     private fun executeQuickMode(config: Config, holder: ExecutableHolder) {
         try {
             val compiledApkPath = config.getCompiledApkFile().toPath()
-
-            if (!compiledApkPath.exists()) {
-                LOG.error("Quick mode cannot run, the previously built APK does not exist.")
-                exitProcess(1)
-            }
 
             val dexFolder = "smali_classes$MODS_SMALI_DEX_NUMBER"
             val dexFile = "classes$MODS_SMALI_DEX_NUMBER.dex"
