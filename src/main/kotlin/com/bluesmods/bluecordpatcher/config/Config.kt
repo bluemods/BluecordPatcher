@@ -75,4 +75,14 @@ data class Config(
      */
     fun getStockDiscordCompiledApkFile(): File = File(baseDir, "discord-stock-126021.apk")
 
+    /**
+     * The location of the fonts zip file.
+     */
+    fun getFontsDir(): File = File(baseDir, "fonts.zip")
+
+    /**
+     * The location of the fonts directory, unzipped.
+     */
+    fun getFontsUnzippedDir(): File = File(baseDir, "fonts")
+
 }

@@ -45,7 +45,7 @@ object Downloader {
             val computedHash = HashUtils.hashFile(output)
             if (sha384Hash != computedHash) {
                 output.delete()
-                throw IOException("File from $url has incorrect hash.\nExpected: $sha384Hash\nReceived: $computedHash")
+                throw IOException("File from $url has incorrect SHA-384 hash.\nExpected: $sha384Hash\nReceived: $computedHash")
             }
         }
     }

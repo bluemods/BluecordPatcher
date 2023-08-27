@@ -61,6 +61,7 @@ object Main {
             executeQuickMode(config, holder)
         } else {
             injectPatch(config)
+            LOG.info("Compiling APK... (this could take a while)")
             holder.compileApk(config.baseDecompiledApk, config.getCompiledApkFile()).checkResult("Compile")
         }
 

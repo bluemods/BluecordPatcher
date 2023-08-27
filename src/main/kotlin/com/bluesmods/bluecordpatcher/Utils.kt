@@ -1,5 +1,6 @@
 package com.bluesmods.bluecordpatcher
 
+import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -7,6 +8,8 @@ import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.text.DecimalFormat
+import java.util.zip.ZipInputStream
+import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
 object Utils {
@@ -26,6 +29,29 @@ object Utils {
             })
         } else {
             fileVisited.invoke(path)
+        }
+    }
+
+    @Throws(IOException::class)
+    fun unzip(zipFile: File, to: Path) {
+        if (to.exists()) to.toFile().deleteRecursively()
+        to.toFile().mkdirs()
+
+        ZipInputStream(zipFile.inputStream()).use { zipIn ->
+            while (true) {
+                val entry = zipIn.getNextEntry() ?: break
+
+                val resolvedPath = to.toAbsolutePath().resolve(entry.name).normalize()
+                if (!resolvedPath.startsWith(to.toAbsolutePath())) {
+                    throw RuntimeException("Entry with an illegal path: " + entry.name)
+                }
+                if (entry.isDirectory) {
+                    Files.createDirectories(resolvedPath)
+                } else {
+                    Files.createDirectories(resolvedPath.parent)
+                    Files.copy(zipIn, resolvedPath)
+                }
+            }
         }
     }
 }

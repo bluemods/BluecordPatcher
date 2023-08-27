@@ -5,6 +5,7 @@ import com.bluesmods.bluecordpatcher.ExecutableHolder
 import com.bluesmods.bluecordpatcher.Utils
 import com.bluesmods.bluecordpatcher.config.Config
 import com.bluesmods.bluecordpatcher.diff.DiffPatcher.CompareResult.*
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -22,6 +23,10 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         /** Stock Discord APK for 126.21 - Stable */
         private const val DISCORD_STOCK_APK_URL = "https://pool.apk.aptoide.com/floricraft/com-discord-126021-62830695-9be8c22e12da4fdcfeb09242a4b3a648.apk"
         private const val DISCORD_STOCK_APK_SHA384_HASH = "5c3ae81ea5bb9379ee5f0b484960d887518e7e87223a195a34f61fda6c170c794e8acdda10fd890755ca1474edab0d3d"
+
+        /** Font pack */
+        private const val ASSETS_FONTS_URL = "https://bluesmods.com/bluecord/static/fonts.zip"
+        private const val ASSETS_FONTS_HASH = "92e418025664cb50a6580816847fed107debc80a18ad290a8c7ea2a8fdbee49916fc8d19614c4ceea9f20d5d28b9d55c"
     }
 
     private val patchDir = config.getPatchDir().toPath()
@@ -36,6 +41,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
     fun setup() {
         downloadDiscordApk()
         decompileDiscordApk(config.baseDecompiledApk)
+        installFonts()
     }
 
     /**
@@ -68,6 +74,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
     private fun downloadAndDecompile(decompileOutput: File) {
         downloadDiscordApk()
         decompileDiscordApk(decompileOutput)
+        installFonts()
     }
 
     private fun downloadDiscordApk() {
@@ -86,12 +93,33 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         }
     }
 
+    private fun installFonts(force: Boolean = false) {
+        val out = config.getFontsDir()
+        if (!out.exists()) {
+            LOG.info("Downloading custom font pack...")
+            Downloader.download(ASSETS_FONTS_URL, out, ASSETS_FONTS_HASH)
+            Utils.unzip(out, config.getFontsUnzippedDir().toPath())
+        }
+
+        Thread.sleep(250L)
+
+        val assets = File(config.baseDecompiledApk, "assets")
+        val fonts = File(assets, "fonts")
+
+        if (force || !fonts.exists()) {
+            // Install fonts into decompiled APK
+            LOG.info("Installing font pack...")
+            FileUtils.copyDirectory(config.getFontsUnzippedDir(), assets)
+        }
+    }
+
     private fun decompileDiscordApk(decompileOutput: File) {
         if (decompileOutput.exists() && decompileOutput.isDirectory && (decompileOutput.list()?.size ?: 0) >= 12) {
             LOG.debug("Stock APK already decompiled, skipping decompilation")
         } else {
             LOG.info("Decompiling stock Discord APK... (This could take a while)")
             holder.decompileApk(config.getStockDiscordCompiledApkFile(), decompileOutput, true)
+            installFonts(true)
         }
     }
 
@@ -121,7 +149,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         }
 
         val pathsToCheck = listOf(
-            "assets",
+            // "assets",
             "lib",
             "res",
             "smali",
@@ -196,7 +224,8 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
             throw PatchException(msg)
         } else if (stockExists && !bluecordExists) {
             throw PatchException("This should be impossible")
-        } else if (!stockExists && bluecordExists) {
+        } else if (!stockExists) {
+            // bluecordExists is always true here
             STOCK_FILE_NOT_EXISTS
         } else {
             // both files exist

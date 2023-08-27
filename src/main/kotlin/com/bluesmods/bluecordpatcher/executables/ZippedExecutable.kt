@@ -1,11 +1,7 @@
 package com.bluesmods.bluecordpatcher.executables
 
+import com.bluesmods.bluecordpatcher.Utils
 import java.io.File
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.zip.ZipInputStream
-import kotlin.io.path.exists
 
 class ZippedExecutable(
     /**
@@ -40,30 +36,7 @@ class ZippedExecutable(
 
     override fun installDelegate() {
         super.download(zipFile)
-        unzip(zipFile, zipToPath.toPath())
+        Utils.unzip(zipFile, zipToPath.toPath())
         zipFile.delete()
-    }
-
-    @Throws(IOException::class)
-    private fun unzip(from: File, to: Path) {
-        if (to.exists()) to.toFile().deleteRecursively()
-        to.toFile().mkdirs()
-
-        ZipInputStream(from.inputStream()).use { zipIn ->
-            while (true) {
-                val entry = zipIn.getNextEntry() ?: break
-
-                val resolvedPath = to.toAbsolutePath().resolve(entry.name).normalize()
-                if (!resolvedPath.startsWith(to.toAbsolutePath())) {
-                    throw RuntimeException("Entry with an illegal path: " + entry.name)
-                }
-                if (entry.isDirectory) {
-                    Files.createDirectories(resolvedPath)
-                } else {
-                    Files.createDirectories(resolvedPath.parent)
-                    Files.copy(zipIn, resolvedPath)
-                }
-            }
-        }
     }
 }
