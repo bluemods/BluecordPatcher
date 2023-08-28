@@ -1,5 +1,6 @@
 *.iml.gradle
-config.ini
+!examples/*
+/config.ini
 build/
 /gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

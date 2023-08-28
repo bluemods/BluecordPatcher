@@ -52,12 +52,21 @@ class ExecutableHolder(
     }
 
     private fun signApkWithCert(keyFile: File, certFile: File, apkToSign: File): ExecutionResult {
-        val args = "sign --key \"${keyFile.absolutePath}\" --cert \"${certFile.absolutePath}\" --out \"${apkToSign.absolutePath}\" \"${apkToSign.absolutePath}\""
+        val args = "sign " +
+                "--key \"${keyFile.absolutePath}\" " +
+                "--cert \"${certFile.absolutePath}\" " +
+                "--out \"${apkToSign.absolutePath}\" " +
+                "\"${apkToSign.absolutePath}\""
         return apkSigner.execute(args)
     }
 
     private fun signApkWithPassword(keyFile: File, keystorePassword: String, apkToSign: File): ExecutionResult {
-        val args = "sign --ks \"${keyFile.absolutePath}\" --ks-pass pass:\"$keystorePassword\" --out \"${apkToSign.absolutePath}\" \"${apkToSign.absolutePath}\""
+        val args = "sign " +
+                "--ks \"${keyFile.absolutePath}\" " +
+                "--ks-pass pass:\"$keystorePassword\" " +
+                "--key-pass pass:\"$keystorePassword\" " +
+                "--out \"${apkToSign.absolutePath}\" " +
+                "\"${apkToSign.absolutePath}\""
         return apkSigner.execute(args)
     }
 
