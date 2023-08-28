@@ -175,16 +175,4 @@ object Main {
         }
         FileUtils.copyDirectory(inputDir, outputDir, false)
     }
-
-    private fun ExecutionResult.checkResult(debugName: String) {
-        with(this) {
-            if (isSuccessful) {
-                LOG.info(debugString(debugName))
-            } else {
-                LOG.warn("Command ${this@checkResult.command} failed:")
-                LOG.warn(commandOutput)
-                exitProcess(1)
-            }
-        }
-    }
 }

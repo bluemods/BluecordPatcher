@@ -119,7 +119,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
             LOG.debug("Stock APK already decompiled, skipping decompilation")
         } else {
             LOG.info("Decompiling stock Discord APK... (This could take a while)")
-            holder.decompileApk(config.getStockDiscordCompiledApkFile(), decompileOutput, true)
+            holder.decompileApk(config.getStockDiscordCompiledApkFile(), decompileOutput, true).checkResult("Stock Decompile")
             installFonts(true)
         }
     }

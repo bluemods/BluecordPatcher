@@ -2,6 +2,7 @@ package com.bluesmods.bluecordpatcher
 
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import kotlin.system.exitProcess
 
 data class ExecutionResult(
     /**
@@ -25,6 +26,16 @@ data class ExecutionResult(
 ) {
 
     fun debugString(debugName: String) = "$debugName done in ${Utils.toDuration(timeTaken)}"
+
+    fun checkResult(debugName: String) {
+        if (isSuccessful) {
+            LOG.info(debugString(debugName))
+        } else {
+            LOG.warn("Command $command failed:")
+            LOG.warn(commandOutput)
+            exitProcess(1)
+        }
+    }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(ExecutionResult::class.java)
