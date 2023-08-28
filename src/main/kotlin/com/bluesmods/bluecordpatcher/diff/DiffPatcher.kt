@@ -1,5 +1,6 @@
 package com.bluesmods.bluecordpatcher.diff
 
+import com.bluesmods.bluecordpatcher.Constants
 import com.bluesmods.bluecordpatcher.Downloader
 import com.bluesmods.bluecordpatcher.ExecutableHolder
 import com.bluesmods.bluecordpatcher.Utils
@@ -193,6 +194,9 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
     }
 
     private fun checkDiff(stockApk: Path, bluecordModdedApk: Path, bluecordFile: Path) {
+        if (bluecordFile.name in Constants.IGNORED_PATCH_FILES) {
+            return
+        }
         val stockFile: Path = stockApk.resolve(bluecordModdedApk.relativize(bluecordFile))
 
         val compareResult = compare(stockFile, bluecordFile)
@@ -200,7 +204,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         when (compareResult) {
             EQUAL -> {} // nothing to do
             NOT_EQUAL, STOCK_FILE_NOT_EXISTS -> {
-                // LOG.info("Different: {} {} to {}", compareResult, stockFile, bluecordFile)
+                LOG.debug("Different: {} {} to {}", compareResult, stockFile, bluecordFile)
 
                 val patchOutput = patchDir.resolve(bluecordModdedApk.relativize(bluecordFile))
                 Files.createDirectories(patchOutput.parent)

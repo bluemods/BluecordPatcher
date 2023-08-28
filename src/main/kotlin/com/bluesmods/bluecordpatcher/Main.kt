@@ -1,5 +1,7 @@
 package com.bluesmods.bluecordpatcher
 
+import com.bluesmods.bluecordpatcher.Constants.IGNORED_PATCH_FILES
+import com.bluesmods.bluecordpatcher.Constants.MODS_SMALI_DEX_NUMBER
 import com.bluesmods.bluecordpatcher.Utils.toDuration
 import com.bluesmods.bluecordpatcher.config.ArgParser
 import com.bluesmods.bluecordpatcher.config.Config
@@ -16,10 +18,6 @@ import kotlin.system.exitProcess
 
 object Main {
     private val LOG = LoggerFactory.getLogger(Main::class.java)
-
-    private const val MODS_SMALI_DEX_NUMBER = 4
-
-    private val IGNORED_PATCH_FILES = arrayOf("FilesToDelete.txt", "network_security_config.txt")
 
     @JvmStatic
     fun main(args: Array<String>) {
