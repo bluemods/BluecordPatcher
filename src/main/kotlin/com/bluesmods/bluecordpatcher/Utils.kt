@@ -13,7 +13,11 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
 object Utils {
-    val isLinux = System.getProperty("os.name").lowercase() in arrayOf("nix", "nux", "aix")
+
+    val isLinux: Boolean by lazy {
+        val os = System.getProperty("os.name").lowercase()
+        os.contains("nix") || os.contains("nux") || os.contains("aix")
+    }
 
     fun toDuration(start: Long, end: Long) = toDuration(end - start)
     fun toDuration(duration: Long): String = DecimalFormat("0.0").format(duration / 1000.0) + "s"
