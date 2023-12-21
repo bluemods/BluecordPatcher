@@ -1,5 +1,6 @@
 package com.bluesmods.bluecordpatcher.loader
 
+import com.bluesmods.bluecordpatcher.Constants
 import com.bluesmods.bluecordpatcher.ExecutableHolder
 import com.bluesmods.bluecordpatcher.Utils
 import com.bluesmods.bluecordpatcher.config.Config
@@ -25,17 +26,17 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
     }
 
     fun makeSmali(): JarExecutable {
-        val version = "smali-2.5.2.jar"
+        val version = "smali-${Constants.SMALI_VERSION}.jar"
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/JesusFreke/smali/downloads/$version")
     }
 
     fun makeBaksmali(): JarExecutable {
-        val version = "baksmali-2.5.2.jar"
+        val version = "baksmali-${Constants.BAKSMALI_VERSION}.jar"
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/JesusFreke/smali/downloads/$version")
     }
 
     fun makeApkTool(): JarExecutable {
-        val version = "apktool_2.8.1.jar"
+        val version = "apktool_${Constants.APKTOOL_VERSION}.jar"
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/iBotPeaches/apktool/downloads/$version")
     }
 

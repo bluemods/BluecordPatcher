@@ -29,7 +29,7 @@ Before running BluecordPatcher the first time, you need to do the following:
 | --patch  | Create patches in the Bluecord project from a modded Discord APK.<br>Use this when you make a change in the decompiled APK itself and want to commit it back to the Bluecord repo.                         |
 | -q       | Quick mode. Allows the APK to be rebuilt faster if the only changes between builds are in the Java / Kotlin code in the Bluecord repository.<br>Note: the tool must be run at least once without this flag |
 | -k       | Keeps debug information in the Smali files, useful for debugging stack traces from the built Bluecord app.                                                                                                 |
-| -v       | Enables verbose logging to stdout                                                                                                                                                                          |                                                                                                                                                                     |
+| -v       | Enables verbose logging to stdout                                                                                                                                                                          |
 
 ## TODOs
 - Show download progress in the tool when downloading files
