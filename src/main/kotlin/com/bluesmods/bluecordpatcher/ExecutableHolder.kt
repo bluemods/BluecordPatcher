@@ -26,9 +26,8 @@ class ExecutableHolder(
 
     fun decompileApk(apkInFile: File, decompiledOutputDir: File, keepDebugInfo: Boolean): ExecutionResult {
         return apkTool.execute {
-            if (!keepDebugInfo) {
-                add("--no-debug-info")
-            }
+            add("d")
+            if (!keepDebugInfo) add("--no-debug-info")
             add("--force")
             addFile("-o", decompiledOutputDir)
             addFile(apkInFile)
