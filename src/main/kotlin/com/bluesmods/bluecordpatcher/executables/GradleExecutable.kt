@@ -15,7 +15,7 @@ class GradleExecutable(private val gradleProjectHome: File, private val gradleJa
             addFile("--project-dir", gradleProjectHome)
             add(":app:assembleDebug")
             if (gradleJavaHome != null && gradleJavaHome.exists()) {
-                addFile("-Dorg.gradle.java.home", gradleJavaHome)
+                add("-Dorg.gradle.java.home=${gradleJavaHome.absolutePath}")
             }
         }
     }

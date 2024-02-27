@@ -1,5 +1,6 @@
 package com.bluesmods.bluecordpatcher
 
+import com.bluesmods.bluecordpatcher.command.OS
 import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitResult
@@ -51,6 +52,14 @@ object Utils {
                     Files.copy(zipIn, resolvedPath)
                 }
             }
+        }
+    }
+
+    fun setFileExecutable(file: File) = apply {
+        if (OS.isLinux) {
+            // chmod +x <file>
+            file.setReadable(true)
+            file.setExecutable(true, true)
         }
     }
 }

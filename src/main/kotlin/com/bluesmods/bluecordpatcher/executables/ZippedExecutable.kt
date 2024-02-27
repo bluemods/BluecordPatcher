@@ -31,7 +31,10 @@ class ZippedExecutable(
     zipHash: String? = null
 ) : Executable(executableFile.name, zipUrl, zipHash) {
 
-    override fun buildCommand(): Command = Command(executableFile)
+    override fun buildCommand(): Command {
+        Utils.setFileExecutable(executableFile)
+        return Command(executableFile)
+    }
 
     override fun isInstalled(): Boolean = executableFile.exists() && executableFile.isFile
 
