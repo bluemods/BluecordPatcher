@@ -1,5 +1,6 @@
 package com.bluesmods.bluecordpatcher
 
+import com.bluesmods.bluecordpatcher.command.ExecutionResult
 import com.bluesmods.bluecordpatcher.config.SigningInfo
 import com.bluesmods.bluecordpatcher.executables.GradleExecutable
 import com.bluesmods.bluecordpatcher.executables.JarExecutable
@@ -24,19 +25,35 @@ class ExecutableHolder(
     }
 
     fun decompileApk(apkInFile: File, decompiledOutputDir: File, keepDebugInfo: Boolean): ExecutionResult {
-        var args = "d "
-        if (!keepDebugInfo) args += " --no-debug-info "
-        args += "--force -o \"${decompiledOutputDir.absolutePath}\" \"${apkInFile.absolutePath}\""
-
-        return apkTool.execute(args)
+        return apkTool.execute {
+            if (!keepDebugInfo) {
+                add("--no-debug-info")
+            }
+            add("--force")
+            add("--no-res")
+            add("--only-main-classes")
+            addFile("-o", decompiledOutputDir)
+            addFile(apkInFile)
+        }
     }
 
     fun compileApk(decompiledPath: File, apkOutFile: File): ExecutionResult {
-        return apkTool.execute("b --use-aapt2 -o \"${apkOutFile.absolutePath}\" \"${decompiledPath.absolutePath}\"")
+        return apkTool.execute {
+            add("b")
+            add("--use-aapt2")
+            add("-nc")
+            addFile("-o", apkOutFile)
+            addFile(decompiledPath)
+        }
     }
 
     fun zipalignApk(apkInFile: File, apkOutFile: File): ExecutionResult {
-        return zipAlign.execute("-f 4 \"${apkInFile.absolutePath}\" \"${apkOutFile.absolutePath}\"")
+        return zipAlign.execute {
+            add("-f")
+            add("4")
+            addFile(apkInFile)
+            addFile(apkOutFile)
+        }
     }
 
     fun signApk(signingInfo: SigningInfo, apkToSign: File) : ExecutionResult = when(signingInfo) {
@@ -52,34 +69,49 @@ class ExecutableHolder(
     }
 
     private fun signApkWithCert(keyFile: File, certFile: File, apkToSign: File): ExecutionResult {
-        val args = "sign " +
-                "--key \"${keyFile.absolutePath}\" " +
-                "--cert \"${certFile.absolutePath}\" " +
-                "--out \"${apkToSign.absolutePath}\" " +
-                "\"${apkToSign.absolutePath}\""
-        return apkSigner.execute(args)
+        return apkSigner.execute {
+            add("sign")
+            addFile("--key", keyFile)
+            addFile("--cert", certFile)
+            addFile("--out", apkToSign)
+            addFile(apkToSign)
+        }
     }
 
     private fun signApkWithPassword(keyFile: File, keystorePassword: String, apkToSign: File): ExecutionResult {
-        val args = "sign " +
-                "--ks \"${keyFile.absolutePath}\" " +
-                "--ks-pass pass:\"$keystorePassword\" " +
-                "--key-pass pass:\"$keystorePassword\" " +
-                "--out \"${apkToSign.absolutePath}\" " +
-                "\"${apkToSign.absolutePath}\""
-        return apkSigner.execute(args)
+        return apkSigner.execute {
+            add("sign")
+            addFile("--ks", keyFile)
+            add("--ks-pass", "pass:\"$keystorePassword\"")
+            addFile("--out", apkToSign)
+            addFile(apkToSign)
+        }
     }
 
     fun installApk(apkFile: File): ExecutionResult {
-        return adb.execute("install -r \"${apkFile.absolutePath}\"")
+        return adb.execute {
+            add("install")
+            add("-r")
+            addFile(apkFile)
+        }
     }
 
     fun baksmali(decompiledDexDir: File, dexOutFile: File): ExecutionResult {
-        return baksmali.execute("d \"${decompiledDexDir.absolutePath}\" -l -o \"${dexOutFile.absolutePath}\"")
+        return baksmali.execute{
+            add("d")
+            addFile(decompiledDexDir)
+            add("-l")
+            add("-o")
+            addFile(dexOutFile)
+        }
     }
 
     fun smali(decompiledDexDir: File, dexOutFile: File): ExecutionResult {
-        return smali.execute("a \"${decompiledDexDir.absolutePath}\" -o \"${dexOutFile.absolutePath}\"")
+        return smali.execute {
+            add("a")
+            addFile(decompiledDexDir)
+            addFile("-o", dexOutFile)
+        }
     }
 
     fun installIfNeeded() {

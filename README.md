@@ -8,12 +8,12 @@ It allows you to:
 
 ## Requirements
 - A Windows or Linux machine
-- Java 1.8+
+- Java 17+
 - ~2GB free space
 
 ## Download
 - Download the latest JAR from the [releases](https://github.com/bluemods/BluecordPatcher/releases) tab.
-- To build from source instead, ```git clone``` this repo, then run ```./gradlew jar```. The jar is output to the build/libs directory.
+- To build from source instead, ```git clone``` this repo, then run ```./gradlew jar```. The jar is then output to the build/libs directory.
 
 ## Setup
 Before running BluecordPatcher the first time, you need to do the following:

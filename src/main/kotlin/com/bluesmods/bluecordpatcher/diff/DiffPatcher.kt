@@ -3,6 +3,7 @@ package com.bluesmods.bluecordpatcher.diff
 import com.bluesmods.bluecordpatcher.Constants
 import com.bluesmods.bluecordpatcher.Downloader
 import com.bluesmods.bluecordpatcher.ExecutableHolder
+import com.bluesmods.bluecordpatcher.Main.exitOnFailure
 import com.bluesmods.bluecordpatcher.Utils
 import com.bluesmods.bluecordpatcher.config.Config
 import com.bluesmods.bluecordpatcher.diff.DiffPatcher.CompareResult.*
@@ -119,7 +120,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
             LOG.debug("Stock APK already decompiled, skipping decompilation")
         } else {
             LOG.info("Decompiling stock Discord APK... (This could take a while)")
-            holder.decompileApk(config.getStockDiscordCompiledApkFile(), decompileOutput, true).checkResult("Stock Decompile")
+            holder.decompileApk(config.getStockDiscordCompiledApkFile(), decompileOutput, true).exitOnFailure("Stock Decompile")
             installFonts(true)
         }
     }
@@ -246,12 +247,11 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
             return false
         }
 
-        return stockFile.inputStream(StandardOpenOption.READ)
-            .use { stockIs ->
-                bluecordFile.inputStream(StandardOpenOption.READ).use { bluecordIs ->
-                    IOUtils.contentEquals(stockIs, bluecordIs)
-                }
+        return stockFile.inputStream(StandardOpenOption.READ).use { stockIs ->
+            bluecordFile.inputStream(StandardOpenOption.READ).use { bluecordIs ->
+                IOUtils.contentEquals(stockIs, bluecordIs)
             }
+        }
     }
 
     enum class CompareResult {

@@ -14,11 +14,6 @@ import kotlin.io.path.isDirectory
 
 object Utils {
 
-    val isLinux: Boolean by lazy {
-        val os = System.getProperty("os.name").lowercase()
-        os.contains("nix") || os.contains("nux") || os.contains("aix")
-    }
-
     fun toDuration(start: Long, end: Long) = toDuration(end - start)
     fun toDuration(duration: Long): String = DecimalFormat("0.0").format(duration / 1000.0) + "s"
 
@@ -43,7 +38,7 @@ object Utils {
 
         ZipInputStream(zipFile.inputStream()).use { zipIn ->
             while (true) {
-                val entry = zipIn.getNextEntry() ?: break
+                val entry = zipIn.nextEntry ?: break
 
                 val resolvedPath = to.toAbsolutePath().resolve(entry.name).normalize()
                 if (!resolvedPath.startsWith(to.toAbsolutePath())) {

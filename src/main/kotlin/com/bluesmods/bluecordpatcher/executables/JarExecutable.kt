@@ -1,5 +1,6 @@
 package com.bluesmods.bluecordpatcher.executables
 
+import com.bluesmods.bluecordpatcher.command.Command
 import java.io.File
 
 open class JarExecutable(
@@ -13,7 +14,10 @@ open class JarExecutable(
         private const val MAX_MEMORY_MB = 2048
     }
 
-    override fun getCommand(args: String) : String = "\"java -Xmx${MAX_MEMORY_MB}m -jar \"${jarFile.absolutePath}\" $args\""
+    override fun buildCommand() : Command = Command("java")
+        .add("-Xmx${MAX_MEMORY_MB}m")
+        .addFile("-jar", jarFile)
+
     override fun isInstalled(): Boolean = jarFile.exists() && jarFile.isFile
 
     override fun installDelegate() {

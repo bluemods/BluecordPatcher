@@ -3,6 +3,7 @@ package com.bluesmods.bluecordpatcher
 import com.bluesmods.bluecordpatcher.Constants.IGNORED_PATCH_FILES
 import com.bluesmods.bluecordpatcher.Constants.MODS_SMALI_DEX_NUMBER
 import com.bluesmods.bluecordpatcher.Utils.toDuration
+import com.bluesmods.bluecordpatcher.command.ExecutionResult
 import com.bluesmods.bluecordpatcher.config.ArgParser
 import com.bluesmods.bluecordpatcher.config.Config
 import com.bluesmods.bluecordpatcher.diff.DiffPatcher
@@ -50,8 +51,8 @@ object Main {
             patcher.patch()
         }
 
-        holder.gradleBuildApk().checkResult("Gradle build")
-        holder.decompileApk(config.getGradleBuiltApkFile(), config.getDecompiledFile(), config.flags.keepDebugInfo).checkResult("Decompile")
+        holder.gradleBuildApk().exitOnFailure("Gradle build")
+        holder.decompileApk(config.getGradleBuiltApkFile(), config.getDecompiledFile(), config.flags.keepDebugInfo).exitOnFailure("Decompile")
 
         modifyDecompiledFile(config)
 
@@ -60,12 +61,12 @@ object Main {
         } else {
             injectPatch(config)
             LOG.info("Compiling APK... (this could take a while)")
-            holder.compileApk(config.baseDecompiledApk, config.getCompiledApkFile()).checkResult("Compile")
+            holder.compileApk(config.baseDecompiledApk, config.getCompiledApkFile()).exitOnFailure("Compile")
         }
 
-        holder.zipalignApk(config.getCompiledApkFile(), config.getCompiledAlignedApkFile()).checkResult("Zipalign")
-        holder.signApk(config.signingInfo, config.getCompiledAlignedApkFile()).checkResult("Sign")
-        holder.installApk(config.getCompiledAlignedApkFile()).checkResult("Install")
+        holder.zipalignApk(config.getCompiledApkFile(), config.getCompiledAlignedApkFile()).exitOnFailure("Zipalign")
+        holder.signApk(config.signingInfo, config.getCompiledAlignedApkFile()).exitOnFailure("Sign")
+        holder.installApk(config.getCompiledAlignedApkFile()).exitOnFailure("Install")
     }
 
     private fun injectPatch(config: Config) {
@@ -154,7 +155,7 @@ object Main {
             holder.smali(
                 decompiledDexDir = File(config.baseDecompiledApk, dexFolder),
                 dexOutFile = dexOutFile
-            ).checkResult("Smali (quick mode)")
+            ).exitOnFailure("Smali (quick mode)")
 
             FileSystems.newFileSystem(compiledApkPath, null as ClassLoader?).use { fs ->
                 val from = dexOutFile.toPath()
@@ -174,5 +175,15 @@ object Main {
             )
         }
         FileUtils.copyDirectory(inputDir, outputDir, false)
+    }
+
+    fun ExecutionResult.exitOnFailure(debugName: String) = apply {
+        if (isSuccessful) {
+            LOG.info("{} complete after {}", debugName, toDuration(executionTime))
+        } else {
+            LOG.warn("Command ${command.name} failed:")
+            LOG.warn(string)
+            exitProcess(1)
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.bluesmods.bluecordpatcher.executables
 
 import com.bluesmods.bluecordpatcher.Utils
+import com.bluesmods.bluecordpatcher.command.Command
 import java.io.File
 
 class ZippedExecutable(
@@ -30,7 +31,7 @@ class ZippedExecutable(
     zipHash: String? = null
 ) : Executable(executableFile.name, zipUrl, zipHash) {
 
-    override fun getCommand(args: String): String = executableFile.absolutePath + " " + args
+    override fun buildCommand(): Command = Command(executableFile)
 
     override fun isInstalled(): Boolean = executableFile.exists() && executableFile.isFile
 

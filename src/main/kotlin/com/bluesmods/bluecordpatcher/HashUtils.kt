@@ -9,7 +9,7 @@ object HashUtils {
     private const val HASH_ALGORITHM = "SHA-384"
     private val HEX_CHARS = "0123456789abcdef".toCharArray()
 
-    fun hashFile(file: File): String {
+    fun sha384Hash(file: File): String {
         val digest = MessageDigest.getInstance(HASH_ALGORITHM)
 
         Files.newInputStream(file.toPath()).use {

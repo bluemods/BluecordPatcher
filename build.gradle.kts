@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.22"
     application
     java
 }
@@ -15,8 +15,8 @@ repositories {
 
 dependencies {
     implementation("com.beust:jcommander:1.82")
-    implementation("ch.qos.logback:logback-classic:1.3.11")
-    implementation("commons-io:commons-io:2.13.0")
+    implementation("ch.qos.logback:logback-classic:1.5.0")
+    implementation("commons-io:commons-io:2.15.1")
     implementation("org.ini4j:ini4j:0.5.4")
 
     testImplementation(kotlin("test"))
@@ -34,14 +34,14 @@ tasks.jar {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
 
@@ -50,7 +50,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 }
 
 application {

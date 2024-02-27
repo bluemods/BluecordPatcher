@@ -2,7 +2,7 @@ package com.bluesmods.bluecordpatcher.loader
 
 import com.bluesmods.bluecordpatcher.Constants
 import com.bluesmods.bluecordpatcher.ExecutableHolder
-import com.bluesmods.bluecordpatcher.Utils
+import com.bluesmods.bluecordpatcher.command.OS
 import com.bluesmods.bluecordpatcher.config.Config
 import com.bluesmods.bluecordpatcher.executables.GradleExecutable
 import com.bluesmods.bluecordpatcher.executables.JarExecutable
@@ -21,21 +21,21 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
     abstract fun makeApkSigner(): ZippedExecutable
     abstract fun makeZipalign(): ZippedExecutable
 
-    fun makeGradleBuild(): GradleExecutable {
+    private fun makeGradleBuild(): GradleExecutable {
         return GradleExecutable(config.gradleProjectHome, config.gradleJavaHome)
     }
 
-    fun makeSmali(): JarExecutable {
+    private fun makeSmali(): JarExecutable {
         val version = "smali-${Constants.SMALI_VERSION}.jar"
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/JesusFreke/smali/downloads/$version")
     }
 
-    fun makeBaksmali(): JarExecutable {
+    private fun makeBaksmali(): JarExecutable {
         val version = "baksmali-${Constants.BAKSMALI_VERSION}.jar"
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/JesusFreke/smali/downloads/$version")
     }
 
-    fun makeApkTool(): JarExecutable {
+    private fun makeApkTool(): JarExecutable {
         val version = "apktool_${Constants.APKTOOL_VERSION}.jar"
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/iBotPeaches/apktool/downloads/$version")
     }
@@ -47,10 +47,12 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
             return makeLoader(config).load()
         }
 
-        private fun makeLoader(config: Config) = if (Utils.isLinux) {
+        private fun makeLoader(config: Config) = if (OS.isLinux) {
             LinuxLoader(config, File(config.baseDir, "linux"))
-        } else {
+        } else if (OS.isWindows) {
             WindowsLoader(config, File(config.baseDir, "windows"))
+        } else {
+            throw IllegalArgumentException("Unsupported OS (${System.getProperty("os.name")}, aborting")
         }
     }
 
