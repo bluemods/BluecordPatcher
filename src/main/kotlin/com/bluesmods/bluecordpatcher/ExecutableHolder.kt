@@ -30,8 +30,6 @@ class ExecutableHolder(
                 add("--no-debug-info")
             }
             add("--force")
-            add("--no-res")
-            add("--only-main-classes")
             addFile("-o", decompiledOutputDir)
             addFile(apkInFile)
         }
