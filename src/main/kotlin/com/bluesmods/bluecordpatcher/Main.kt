@@ -67,6 +67,10 @@ object Main {
         holder.zipalignApk(config.getCompiledApkFile(), config.getCompiledAlignedApkFile()).exitOnFailure("Zipalign")
         holder.signApk(config.signingInfo, config.getCompiledAlignedApkFile()).exitOnFailure("Sign")
         holder.installApk(config.getCompiledAlignedApkFile()).exitOnFailure("Install")
+
+        // Clean up temporary files...
+        config.getCompiledApkFile().delete()
+        config.getCompiledAlignedApkIdsigFile().delete()
     }
 
     private fun injectPatch(config: Config) {

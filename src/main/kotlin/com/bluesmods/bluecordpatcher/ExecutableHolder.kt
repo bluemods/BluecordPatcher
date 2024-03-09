@@ -47,13 +47,14 @@ class ExecutableHolder(
     fun zipalignApk(apkInFile: File, apkOutFile: File): ExecutionResult {
         return zipAlign.execute {
             add("-f")
+            add("-p")
             add("4")
             addFile(apkInFile)
             addFile(apkOutFile)
         }
     }
 
-    fun signApk(signingInfo: SigningInfo, apkToSign: File) : ExecutionResult = when(signingInfo) {
+    fun signApk(signingInfo: SigningInfo, apkToSign: File): ExecutionResult = when (signingInfo) {
         is SigningInfo.PlainSigningInfo -> {
             signApkWithCert(signingInfo.apkSigningKey, signingInfo.apkSigningCert, apkToSign)
         }
@@ -94,7 +95,7 @@ class ExecutableHolder(
     }
 
     fun baksmali(decompiledDexDir: File, dexOutFile: File): ExecutionResult {
-        return baksmali.execute{
+        return baksmali.execute {
             add("d")
             addFile(decompiledDexDir)
             add("-l")
@@ -115,7 +116,7 @@ class ExecutableHolder(
         val needToInstall = executableList.filter { !it.isInstalled() }
         if (needToInstall.isEmpty()) return
 
-        println("The following executables need to be downloaded:\n- ${needToInstall.map { it.name + " : " + it.url }.joinToString(separator = "\n- ")}")
+        println("The following executables need to be downloaded:\n- ${needToInstall.joinToString(separator = "\n- ") { it.name + " : " + it.url }}")
         println("Would you like to do so now? (y/n)")
         val action = readln()
         if (action.equals("y", true)) {
