@@ -80,7 +80,7 @@ class ExecutableHolder(
         return apkSigner.execute {
             add("sign")
             addFile("--ks", keyFile)
-            add("--ks-pass", "pass:\"$keystorePassword\"")
+            add("--ks-pass", "pass:$keystorePassword") // Quotes are required in the terminal, but break the password when called in JVM. Don't use quotes.
             addFile("--out", apkToSign)
             addFile(apkToSign)
         }

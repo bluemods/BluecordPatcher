@@ -89,9 +89,9 @@ class ArgParser {
             val signingConfig: SigningInfo = when (val signingType = sign.getOrThrow("SigningType")) {
                 "Password" -> {
                     val apkSigningKey = sign.getFileOrThrow("KeyStoreFile")
-                    val apkSigningPassword = sign.getOrThrow("KeyStorePassword")
+                    val apkSigningPassword = sign.getOrThrow("KeyStorePasswordFile")
 
-                    SigningInfo.PasswordSigningInfo(apkSigningKey, apkSigningPassword)
+                    SigningInfo.PasswordSigningInfo(apkSigningKey, File(apkSigningPassword).readText())
                 }
                 "Key" -> {
                     val apkSigningKey = sign.getFileOrThrow("Key")
