@@ -12,13 +12,14 @@ import kotlin.system.exitProcess
 class ExecutableHolder(
     private val gradle: GradleExecutable,
     private val adb: ZippedExecutable,
+    private val aapt: ZippedExecutable,
     private val apkSigner: ZippedExecutable,
     private val zipAlign: ZippedExecutable,
     private val smali: JarExecutable,
     private val baksmali: JarExecutable,
     private val apkTool: JarExecutable
 ) {
-    private val executableList = listOf(gradle, adb, apkSigner, zipAlign, smali, baksmali, apkTool)
+    private val executableList = listOf(gradle, adb, aapt, apkSigner, zipAlign, smali, baksmali, apkTool)
 
     fun gradleBuildApk(): ExecutionResult {
         return gradle.execute()
@@ -91,6 +92,42 @@ class ExecutableHolder(
             add("install")
             add("-r")
             addFile(apkFile)
+        }
+    }
+
+    data class BasicApkPackageInfo(
+        val packageName: String,
+        val launchableActivityClassName: String
+    )
+
+    fun extractBasicPackageInfo(apkFile: File): BasicApkPackageInfo? {
+        val result = aapt.execute {
+            add("dump")
+            add("badging")
+            addFile(apkFile)
+        }
+        return if (result.isSuccessful) {
+            val packageName = result.lines.first()
+                .substringAfter("package: name='")
+                .substringBefore('\'')
+
+            val launchableActivityClassName = result.lines.firstOrNull { "launchable-activity:" in it }
+                ?.substringAfter("launchable-activity: name='")
+                ?.substringBefore('\'')
+                ?: return null
+
+            BasicApkPackageInfo(packageName, launchableActivityClassName)
+        } else {
+            null
+        }
+    }
+
+    fun launchApk(packageName: String, activityClassName: String): ExecutionResult {
+        return adb.execute {
+            add("shell")
+            add("am")
+            add("start")
+            add("-n", "$packageName/$activityClassName")
         }
     }
 

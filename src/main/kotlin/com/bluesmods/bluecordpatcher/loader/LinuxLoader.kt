@@ -18,6 +18,10 @@ class LinuxLoader(config: Config, baseDir: File) : ExecutableLoader(config, base
         )
     }
 
+    override fun makeAapt(): ZippedExecutable {
+        return makeBuildToolsExecutable("aapt")
+    }
+
     override fun makeApkSigner(): ZippedExecutable {
         return makeBuildToolsExecutable("apksigner")
     }

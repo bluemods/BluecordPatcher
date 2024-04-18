@@ -68,6 +68,13 @@ object Main {
         holder.signApk(config.signingInfo, config.getCompiledAlignedApkFile()).exitOnFailure("Sign")
         holder.installApk(config.getCompiledAlignedApkFile()).exitOnFailure("Install")
 
+        // Automatically start the app
+        holder.extractBasicPackageInfo(config.getCompiledAlignedApkFile())?.let {
+            holder.launchApk(it.packageName, it.launchableActivityClassName)
+        } ?: run {
+            LOG.error("could not extract package info / find entry point to auto launch app")
+        }
+
         // Clean up temporary files...
         config.getCompiledApkFile().delete()
         config.getCompiledAlignedApkIdsigFile().delete()

@@ -22,6 +22,10 @@ class WindowsLoader(config: Config, baseDir: File) : ExecutableLoader(config, ba
         return makeBuildToolsExecutable("apksigner.bat")
     }
 
+    override fun makeAapt(): ZippedExecutable {
+        return makeBuildToolsExecutable("aapt.bat")
+    }
+
     override fun makeZipalign(): ZippedExecutable {
         return makeBuildToolsExecutable("zipalign.exe")
     }
