@@ -84,35 +84,45 @@ class ArgParser {
                 throw IllegalArgumentException("BaseDecompiledApk is a file, expected a directory")
             }
 
-            val sign: Profile.Section = ini.getSectionOrThrow("sign")
-
-            val signingConfig: SigningInfo = when (val signingType = sign.getOrThrow("SigningType")) {
-                "Password" -> {
-                    val apkSigningKey = sign.getFileOrThrow("KeyStoreFile")
-                    val apkSigningPassword = sign.getOrThrow("KeyStorePasswordFile")
-
-                    SigningInfo.PasswordSigningInfo(apkSigningKey, File(apkSigningPassword).readText())
-                }
-                "Key" -> {
-                    val apkSigningKey = sign.getFileOrThrow("Key")
-                    val apkSigningCertificate = sign.getFileOrThrow("Cert")
-
-                    SigningInfo.PlainSigningInfo(apkSigningKey, apkSigningCertificate)
-                }
-                else -> {
-                    throw IllegalArgumentException("Invalid SigningType ($signingType) expected \"Password\" or \"Key\"")
-                }
-            }
-
-            val gradle: Profile.Section = ini.getSectionOrThrow("gradle")
+            val signingConfig = ini.getSectionOrThrow("sign").parseSigningInfo(ini)
+            val gradle = ini.getSectionOrThrow("gradle")
             val gradleProjectHome = gradle.getDirectoryOrThrow("ProjectHome")
             val gradleJavaHome = gradle["JavaHome"]?.let { gradle.getDirectoryOrThrow("JavaHome") }
 
             if (flags.verbose) {
                 setLoggingLevel(Level.DEBUG)
             }
-
             return Config(flags, baseDir, baseDecompiledApk, signingConfig, gradleProjectHome, gradleJavaHome)
+        }
+
+        private fun Profile.Section.parseSigningInfo(ini: Profile): SigningInfo {
+            return when (val signingType = getOrThrow("SigningType")) {
+                "Password" -> {
+                    val apkSigningKey = getFileOrThrow("KeyStoreFile")
+                    val apkSigningPassword = getOrThrow("KeyStorePassword")
+
+                    SigningInfo.PasswordSigningInfo(apkSigningKey, File(apkSigningPassword).readText())
+                }
+                "Key" -> {
+                    val apkSigningKey = getFileOrThrow("Key")
+                    val apkSigningCertificate = getFileOrThrow("Cert")
+
+                    SigningInfo.PlainSigningInfo(apkSigningKey, apkSigningCertificate)
+                }
+                "Rotate" -> {
+                    val lineage = getFileOrThrow("Lineage")
+                    val signers = ArrayList<SigningInfo>()
+                    for (i in 1..Int.MAX_VALUE) {
+                        val signer = this["Signer$i"]?.let(ini::get) ?: break
+                        signers.add(signer.parseSigningInfo(ini))
+                    }
+                    check(signers.isNotEmpty()) { "No signers found for Rotate SigningType. Specify them using Signer1, Signer2, etc..."}
+                    SigningInfo.RotationSigningInfo(lineage, signers)
+                }
+                else -> {
+                    error("Invalid SigningType ($signingType) expected \"Password\", \"Key\", or \"Rotate\"")
+                }
+            }
         }
 
         private fun Ini.getSectionOrThrow(key: String) : Profile.Section {

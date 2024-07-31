@@ -62,8 +62,38 @@ class ExecutableHolder(
         is SigningInfo.PasswordSigningInfo -> {
             signApkWithPassword(signingInfo.apkSigningKey, signingInfo.apkKeyStorePassword, apkToSign)
         }
+        is SigningInfo.RotationSigningInfo -> {
+            signApkRotation(apkToSign, signingInfo)
+        }
         else -> {
             throw IllegalArgumentException("Unknown SigningInfo: $signingInfo")
+        }
+    }
+
+    private fun signApkRotation(apkToSign: File, rotationSigningInfo: SigningInfo.RotationSigningInfo): ExecutionResult {
+        return apkSigner.execute {
+            add("sign")
+            add("--rotation-min-sdk-version", "28")
+
+            for ((index, signer) in rotationSigningInfo.signers.withIndex()) {
+                if (index > 0) {
+                    add("--next-signer")
+                }
+                when (signer) {
+                    is SigningInfo.PlainSigningInfo -> {
+                        addFile("--key", signer.apkSigningKey)
+                        addFile("--cert", signer.apkSigningCert)
+                    }
+                    is SigningInfo.PasswordSigningInfo -> {
+                        addFile("--ks", signer.apkSigningKey)
+                        add("--ks-pass", "pass:${signer.apkKeyStorePassword}")
+                    }
+                    else -> error("unsupported signing type ${signer.javaClass.name}")
+                }
+            }
+            addFile("--lineage", rotationSigningInfo.lineage)
+            addFile("--out", apkToSign)
+            addFile(apkToSign)
         }
     }
 
