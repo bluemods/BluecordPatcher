@@ -152,12 +152,27 @@ class ExecutableHolder(
         }
     }
 
-    fun launchApk(packageName: String, activityClassName: String): ExecutionResult {
+    fun launchApk(
+        packageName: String,
+        activityClassName: String,
+        extraStrings: Map<String, String> = emptyMap() // extra strings to pass to the Intent
+    ): ExecutionResult {
+        // Kill first to ensure proper boot sequence
+        adb.execute {
+            add("shell")
+            add("am")
+            add("force-stop")
+            add(packageName)
+        }
         return adb.execute {
             add("shell")
             add("am")
             add("start")
-            add("-n", "$packageName/$activityClassName")
+            add("-n", "$packageName/$activityClassName".replace("""$""", """\$"""))
+            extraStrings.forEach { (k, v) ->
+                add("--es")
+                add(k, v)
+            }
         }
     }
 
