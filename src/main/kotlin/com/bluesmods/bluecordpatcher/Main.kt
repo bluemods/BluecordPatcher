@@ -182,9 +182,15 @@ object Main {
 
     private fun fixKotlinAndCopy(inputDir: File, outputDir: File) {
         for (smaliFile in FileUtils.listFiles(inputDir, arrayOf("smali"), true)) {
-            smaliFile.writeText(smaliFile.readText()
-                .replace("Lkotlin/", "Lkotlin2/")
-            )
+            val originalText = smaliFile.readText()
+
+            // Some classes need to opt out of this transformation,
+            // namely ones that interact with Discord's Kotlin code.
+            if (".annotation runtime Lmods/compiler/annotations/DoNotTouch;" !in originalText) {
+                smaliFile.writeText(originalText
+                    .replace("Lkotlin/", "Lkotlin2/")
+                )
+            }
         }
         FileUtils.copyDirectory(inputDir, outputDir, false)
     }
