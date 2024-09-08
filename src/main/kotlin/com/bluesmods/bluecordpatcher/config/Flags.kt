@@ -24,5 +24,10 @@ data class Flags(
     /**
      * If true, will create patches in the Bluecord project from a modded Discord APK
      */
-    val createPatches: Boolean
+    val createPatches: Boolean,
+
+    /**
+     * If true, build the beta app and install it.
+     */
+    val createBetaApk: Boolean
 )

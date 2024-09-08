@@ -182,17 +182,51 @@ object Main {
 
     private fun fixKotlinAndCopy(inputDir: File, outputDir: File) {
         for (smaliFile in FileUtils.listFiles(inputDir, arrayOf("smali"), true)) {
-            val originalText = smaliFile.readText()
-
-            // Some classes need to opt out of this transformation,
-            // namely ones that interact with Discord's Kotlin code.
-            if (".annotation runtime Lmods/compiler/annotations/DoNotTouch;" !in originalText) {
-                smaliFile.writeText(originalText
-                    .replace("Lkotlin/", "Lkotlin2/")
-                )
-            }
+            fixKotlinFile(smaliFile, false)
         }
         FileUtils.copyDirectory(inputDir, outputDir, false)
+    }
+
+    fun fixKotlinFile(smaliFile: File, removeDebugSymbols: Boolean = false) {
+        fun String.removeAnnotation(type: String, clsName: String): String {
+            var t = this
+            while (true) {
+                val start = t.indexOf(".annotation $type $clsName")
+                if (start == -1) {
+                    break
+                }
+                val end = t.indexOf(".end annotation", start)
+                val replace = t.substring(start, end+15)
+                t = t.replace(replace, "")
+            }
+            return t
+        }
+
+        val t = smaliFile.readText()
+            .replace("Lkotlin/", "Lkotlin2/")
+            .replace("kotlin.internal.jdk8.", "kotlin2.internal.jdk8.") // reflection crash fix for random
+            .replace("Lkotlinx/", "Lkotlinx2/")
+            .replace("Lio/grpc/", "Lio/grpc2/")
+            .replace("Lcom/squareup/picasso/", "Lcom/squareup/picasso2/")
+            .replace("    .annotation runtime Lkotlin2/jvm/JvmStatic;\n    .end annotation", "")
+            .replace("\t.annotation runtime Lkotlin2/jvm/JvmStatic;\n\t.end annotation", "")
+            .removeAnnotation("system", "Ldalvik/annotation/MethodParameters;")
+            .removeAnnotation("runtime", "Lkotlin2/Metadata;")
+            .removeAnnotation("system", "Ldalvik/annotation/SourceDebugExtension;")
+
+        smaliFile.writeText(t)
+
+        if (removeDebugSymbols) {
+            smaliFile.writeText(smaliFile.readLines().filter {
+                val test = it.trim()
+                !test.startsWith(".param ") &&
+                        !test.startsWith(".local ") &&
+                        !test.startsWith(".end local") &&
+                        !test.startsWith(".line ") &&
+                        !test.startsWith(".restart ") &&
+                        test != "nop"
+            }.joinToString("\n").replace("\n{3,}".toRegex(), "\n\n"))
+        }
     }
 
     fun ExecutionResult.exitOnFailure(debugName: String) = apply {

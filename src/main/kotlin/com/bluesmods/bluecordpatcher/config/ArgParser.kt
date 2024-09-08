@@ -45,6 +45,12 @@ class ArgParser {
     var createPatches: Boolean = false
 
     @Parameter(
+        names = ["--beta"],
+        description = "Builds and installs the Beta version of the apk as well as the release version (com.bluecordbeta)",
+    )
+    var createBetaApk: Boolean = false
+
+    @Parameter(
         description = "[path/to/config/file]"
     )
     private var configFile: String = "config.ini"
@@ -68,7 +74,7 @@ class ArgParser {
                 exitProcess(0)
             }
 
-            val flags = Flags(arguments.quickMode, arguments.keepDebugInfo, arguments.verbose, arguments.createPatches)
+            val flags = Flags(arguments.quickMode, arguments.keepDebugInfo, arguments.verbose, arguments.createPatches, arguments.createBetaApk)
 
             val ini: Ini = try {
                 Ini(File(arguments.configFile))
