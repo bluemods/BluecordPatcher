@@ -22,6 +22,7 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        LOG.info("-----Bluecord Patcher Startup-----")
         val start = System.currentTimeMillis()
         doWork(ArgParser.parse(*args))
         val end = System.currentTimeMillis()
@@ -51,6 +52,7 @@ object Main {
             patcher.patch()
         }
 
+        LOG.info("Executing gradle build, this can take a while...")
         holder.gradleBuildApk().exitOnFailure("Gradle build")
         holder.decompileApk(config.getGradleBuiltApkFile(), config.getDecompiledFile(), config.flags.keepDebugInfo).exitOnFailure("Decompile")
 
