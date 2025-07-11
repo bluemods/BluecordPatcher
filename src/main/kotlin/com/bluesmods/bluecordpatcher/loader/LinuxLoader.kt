@@ -32,12 +32,12 @@ class LinuxLoader(config: Config, baseDir: File) : ExecutableLoader(config, base
 
     private fun makeBuildToolsExecutable(commandName: String): ZippedExecutable {
         val version = "build-tools_${Constants.ANDROID_BUILD_TOOLS_VERSION}-linux.zip"
-        val out = File(baseDir, "build-tools")
+        val out = File(baseDir, "build-tools-${Constants.ANDROID_BUILD_TOOLS_VERSION}")
 
         return ZippedExecutable(
             File(baseDir, version),
             out,
-            File(out, "android-UpsideDownCake/$commandName"),
+            File(out, "android-${Constants.OS_CODENAME}/$commandName"),
             "https://dl.google.com/android/repository/$version"
         )
     }
