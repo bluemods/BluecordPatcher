@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation("com.beust:jcommander:1.82")
-    implementation("ch.qos.logback:logback-classic:1.5.0")
+    implementation("ch.qos.logback:logback-classic:1.5.13")
     implementation("commons-io:commons-io:2.15.1")
     implementation("org.ini4j:ini4j:0.5.4")
 
