@@ -8,7 +8,7 @@ It allows you to:
 
 ## Requirements
 - A Windows or Linux machine
-- Java 17+
+- Java 8+
 - ~2GB free space
 
 ## Download
