@@ -71,6 +71,7 @@ class Command @JvmOverloads constructor(
     fun execute(): ExecutionResult {
         val start = System.currentTimeMillis()
         val process = try {
+            // println(args.joinToString(" "))
             ProcessBuilder().command(args).redirectErrorStream(true).start()
         } catch (e: Throwable) {
             LOG.error("failed to build $args", e)

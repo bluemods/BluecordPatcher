@@ -195,10 +195,27 @@ class ExecutableHolder(
         }
     }
     
-    fun protoc(protoFile: File, baseDir: File, javaOutDir: File): ExecutionResult {
+    fun protocJava(
+        protoFile: File,
+        baseDir: File,
+        javaOutDir: File
+    ): ExecutionResult {
         return protoc.execute {
             add("--proto_path", "${baseDir.absolutePath}")
             add("--java_out=lite:${javaOutDir.absolutePath}")
+            addFile(protoFile)
+        }
+    }
+
+    fun protocGo(
+        protoFile: File,
+        baseDir: File,
+        goOutDir: File
+    ): ExecutionResult {
+        return protoc.execute {
+            addFile("--proto_path", baseDir)
+            addFile("--go_out", goOutDir)
+            add("--go_opt", "paths=source_relative")
             addFile(protoFile)
         }
     }

@@ -32,6 +32,11 @@ data class Config(
      * The Java Home to use when building the APK from gradle.
      */
     val gradleJavaHome: File?,
+
+    /**
+     * Where to output proto generated files in the Golang server project.
+     */
+    val goProtobufOutDir: File?,
 ) {
     /**
      * Folder of the decompiled APK built by gradle.

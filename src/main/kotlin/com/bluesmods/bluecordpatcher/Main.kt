@@ -103,11 +103,19 @@ object Main {
         LOG.info("Compiling proto files...")
 
         for (protoFile in protoFiles) {
-            holder.protoc(
+            holder.protocJava(
                 protoFile = protoFile.toFile(),
                 baseDir = protoDir,
-                javaOutDir = javaOutDir
-            ).exitOnFailure("protoc ${protoFile.name}")
+                javaOutDir = javaOutDir,
+            ).exitOnFailure("protoc-java ${protoFile.name}")
+
+           if (config.goProtobufOutDir != null) {
+               holder.protocGo(
+                   protoFile = protoFile.toFile(),
+                   baseDir = protoDir,
+                   goOutDir = config.goProtobufOutDir,
+               ).exitOnFailure("protoc-go ${protoFile.name}")
+           }
         }
     }
 

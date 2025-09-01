@@ -89,6 +89,7 @@ class ArgParser {
             if (baseDecompiledApk.exists() && !baseDecompiledApk.isDirectory) {
                 throw IllegalArgumentException("BaseDecompiledApk is a file, expected a directory")
             }
+            val goProtobufOutDir = config["GoProtobufOutDir"]?.let { config.getDirectoryOrThrow("GoProtobufOutDir") }
 
             val signingConfig = ini.getSectionOrThrow("sign").parseSigningInfo(ini)
             val gradle = ini.getSectionOrThrow("gradle")
@@ -98,7 +99,15 @@ class ArgParser {
             if (flags.verbose) {
                 setLoggingLevel(Level.DEBUG)
             }
-            return Config(flags, baseDir, baseDecompiledApk, signingConfig, gradleProjectHome, gradleJavaHome)
+            return Config(
+                flags = flags,
+                baseDir = baseDir,
+                baseDecompiledApk = baseDecompiledApk,
+                signingInfo = signingConfig,
+                gradleProjectHome = gradleProjectHome,
+                gradleJavaHome = gradleJavaHome,
+                goProtobufOutDir = goProtobufOutDir
+            )
         }
 
         private fun Profile.Section.parseSigningInfo(ini: Profile): SigningInfo {
