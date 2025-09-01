@@ -11,4 +11,5 @@ object Constants {
     const val APKTOOL_VERSION = "2.11.1"
     const val SMALI_VERSION = "2.5.2"
     const val BAKSMALI_VERSION = "2.5.2"
+    const val PROTOC_VERSION = "32.0"
 }

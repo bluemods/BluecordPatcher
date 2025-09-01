@@ -17,9 +17,10 @@ class ExecutableHolder(
     private val zipAlign: ZippedExecutable,
     private val smali: JarExecutable,
     private val baksmali: JarExecutable,
-    private val apkTool: JarExecutable
+    private val apkTool: JarExecutable,
+    private val protoc: ZippedExecutable
 ) {
-    private val executableList = listOf(gradle, adb, aapt, apkSigner, zipAlign, smali, baksmali, apkTool)
+    private val executableList = listOf(gradle, adb, aapt, apkSigner, zipAlign, smali, baksmali, apkTool, protoc)
 
     fun gradleBuildApk(): ExecutionResult {
         return gradle.execute()
@@ -191,6 +192,14 @@ class ExecutableHolder(
             add("a")
             addFile(decompiledDexDir)
             addFile("-o", dexOutFile)
+        }
+    }
+    
+    fun protoc(protoFile: File, baseDir: File, javaOutDir: File): ExecutionResult {
+        return protoc.execute {
+            add("--proto_path", "${baseDir.absolutePath}")
+            add("--java_out=lite:${javaOutDir.absolutePath}")
+            addFile(protoFile)
         }
     }
 

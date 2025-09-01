@@ -21,6 +21,7 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
     protected abstract fun makeAapt(): ZippedExecutable
     protected abstract fun makeApkSigner(): ZippedExecutable
     protected abstract fun makeZipalign(): ZippedExecutable
+    protected abstract fun makeProtoc(): ZippedExecutable
 
     private fun makeGradleBuild(): GradleExecutable {
         return GradleExecutable(config.gradleProjectHome, config.gradleJavaHome)
@@ -59,14 +60,15 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
 
     fun load(): ExecutableHolder {
         return ExecutableHolder(
-            makeGradleBuild(),
-            makeAdb(),
-            makeAapt(),
-            makeApkSigner(),
-            makeZipalign(),
-            makeSmali(),
-            makeBaksmali(),
-            makeApkTool()
+            gradle = makeGradleBuild(),
+            adb = makeAdb(),
+            aapt = makeAapt(),
+            apkSigner = makeApkSigner(),
+            zipAlign = makeZipalign(),
+            smali = makeSmali(),
+            baksmali = makeBaksmali(),
+            apkTool = makeApkTool(),
+            protoc = makeProtoc()
         )
     }
 }

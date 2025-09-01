@@ -13,9 +13,10 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.nio.file.*
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
+import kotlin.streams.toList
 import kotlin.system.exitProcess
-
 
 object Main {
     private val LOG = LoggerFactory.getLogger(Main::class.java)
@@ -54,9 +55,14 @@ object Main {
 
         LOG.info("Executing gradle build, this can take a while...")
         holder.gradleBuildApk().exitOnFailure("Gradle build")
-        holder.decompileApk(config.getGradleBuiltApkFile(), config.getDecompiledFile(), config.flags.keepDebugInfo).exitOnFailure("Decompile")
+        holder.decompileApk(
+            apkInFile = config.getGradleBuiltApkFile(),
+            decompiledOutputDir = config.getDecompiledFile(),
+            keepDebugInfo = config.flags.keepDebugInfo
+        ).exitOnFailure("Decompile")
 
         modifyDecompiledFile(config)
+        addProtos(holder, config)
 
         if (config.flags.quickMode) {
             executeQuickMode(config, holder)
@@ -81,6 +87,28 @@ object Main {
         // Clean up temporary files...
         config.getCompiledApkFile().delete()
         config.getCompiledAlignedApkIdsigFile().delete()
+    }
+
+    private fun addProtos(holder: ExecutableHolder, config: Config) {
+        val protoDir = File(config.gradleProjectHome, "app/protos")
+        val javaOutDir = File(config.gradleProjectHome, "app/src/main/generated")
+        val protoFiles = Files.walk(protoDir.toPath())
+            .filter { it.isRegularFile() && it.name.endsWith(".proto") }
+            .toList()
+
+        if (protoFiles.isEmpty()) {
+            LOG.warn("no proto files")
+            return
+        }
+        LOG.info("Compiling proto files...")
+
+        for (protoFile in protoFiles) {
+            holder.protoc(
+                protoFile = protoFile.toFile(),
+                baseDir = protoDir,
+                javaOutDir = javaOutDir
+            ).exitOnFailure("protoc ${protoFile.name}")
+        }
     }
 
     private fun injectPatch(config: Config) {
@@ -115,7 +143,7 @@ object Main {
         val filesToDelete: List<File> = try {
             patchDeleteFile.readLines().map { File(config.baseDecompiledApk, it.trim()) }
         } catch (e: IOException) {
-            LOG.warn("Failed to read ${patchDeleteFile.absolutePath}")
+            LOG.warn("Failed to read ${patchDeleteFile.absolutePath}", e)
             emptyList()
         }
 
@@ -146,11 +174,17 @@ object Main {
             val modsDir = File(folderName, "mods")
             val kotlinDir = File(folderName, "kotlin")
             val renamedKotlinDir = File(folderName, "kotlin2")
+            val protoDir = File(folderName, "com/google/protobuf")
 
-            if (modsDir.isDirectory) fixKotlinAndCopy(modsDir, blueOutputDir)
+            if (modsDir.isDirectory) {
+                fixKotlinAndCopy(modsDir, blueOutputDir)
+            }
             if (kotlinDir.isDirectory) {
                 kotlinDir.renameTo(renamedKotlinDir)
                 fixKotlinAndCopy(renamedKotlinDir, File(bluecordDir, "_doNotTouch/kotlin2"))
+            }
+            if (protoDir.isDirectory) {
+                fixKotlinAndCopy(protoDir, File(bluecordDir, "_doNotTouch/protobuf"))
             }
         }
         val end = System.currentTimeMillis()

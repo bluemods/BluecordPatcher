@@ -30,6 +30,19 @@ class WindowsLoader(config: Config, baseDir: File) : ExecutableLoader(config, ba
         return makeBuildToolsExecutable("zipalign.exe")
     }
 
+    override fun makeProtoc(): ZippedExecutable {
+        val version = Constants.PROTOC_VERSION
+        val out = File(baseDir, "protoc")
+        val arch = System.getProperty("sun.arch.data.model")
+
+        return ZippedExecutable(
+            File(baseDir, version),
+            out,
+            File(out, "bin/protoc.exe"),
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${version}/protoc-${version}-win${arch}.zip"
+        )
+    }
+
     private fun makeBuildToolsExecutable(commandName: String): ZippedExecutable {
         val version = "build-tools_${Constants.ANDROID_BUILD_TOOLS_VERSION}-windows.zip"
         val out = File(baseDir, "build-tools-${Constants.ANDROID_BUILD_TOOLS_VERSION}")
