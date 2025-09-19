@@ -22,8 +22,12 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
     companion object {
         private val LOG = LoggerFactory.getLogger(DiffPatcher::class.java)
 
-        /** Stock Discord APK for 126.21 - Stable */
-        private const val DISCORD_STOCK_APK_URL = "https://pool.apk.aptoide.com/floricraft/com-discord-126021-62830695-9be8c22e12da4fdcfeb09242a4b3a648.apk"
+        /**
+         * Stock Discord APK for 126.21 - Stable
+         *
+         * Aptoide no longer hosts it, we host it ourselves
+         */
+        private const val DISCORD_STOCK_APK_URL = "https://cdn.bluesmods.net/downloads/discord-stock-126021.apk"
         private const val DISCORD_STOCK_APK_SHA384_HASH = "5c3ae81ea5bb9379ee5f0b484960d887518e7e87223a195a34f61fda6c170c794e8acdda10fd890755ca1474edab0d3d"
 
         /** Font pack */
