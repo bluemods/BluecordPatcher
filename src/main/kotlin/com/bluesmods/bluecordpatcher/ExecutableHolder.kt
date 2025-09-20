@@ -18,16 +18,17 @@ class ExecutableHolder(
     private val smali: JarExecutable,
     private val baksmali: JarExecutable,
     private val apkTool: JarExecutable,
-    private val protoc: ZippedExecutable
+    private val protoc: ZippedExecutable,
+    private val legacyApkTool: JarExecutable,
 ) {
-    private val executableList = listOf(gradle, adb, aapt, apkSigner, zipAlign, smali, baksmali, apkTool, protoc)
+    private val executableList = listOf(gradle, adb, aapt, apkSigner, zipAlign, smali, baksmali, apkTool, protoc, legacyApkTool)
 
     fun gradleBuildApk(): ExecutionResult {
         return gradle.execute()
     }
 
-    fun decompileApk(apkInFile: File, decompiledOutputDir: File, keepDebugInfo: Boolean): ExecutionResult {
-        return apkTool.execute {
+    fun decompileApk(apkInFile: File, decompiledOutputDir: File, keepDebugInfo: Boolean, useLegacy: Boolean = false): ExecutionResult {
+        return (if (useLegacy) legacyApkTool else apkTool).execute {
             add("d")
             if (!keepDebugInfo) add("--no-debug-info")
             add("--force")

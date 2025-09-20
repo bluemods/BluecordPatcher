@@ -42,6 +42,11 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
         return JarExecutable(File(baseDir, version), "https://bitbucket.org/iBotPeaches/apktool/downloads/$version")
     }
 
+    private fun makeLegacyApkTool(): JarExecutable {
+        val version = "apktool_2.8.1.jar"
+        return JarExecutable(File(baseDir, version), "https://github.com/iBotPeaches/Apktool/releases/download/v2.8.1/$version")
+    }
+
     companion object {
         @JvmStatic
         fun load(config: Config): ExecutableHolder {
@@ -68,7 +73,8 @@ abstract class ExecutableLoader(private val config: Config, protected val baseDi
             smali = makeSmali(),
             baksmali = makeBaksmali(),
             apkTool = makeApkTool(),
-            protoc = makeProtoc()
+            protoc = makeProtoc(),
+            legacyApkTool = makeLegacyApkTool()
         )
     }
 }

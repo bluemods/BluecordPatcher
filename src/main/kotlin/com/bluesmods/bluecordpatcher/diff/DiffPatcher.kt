@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.*
 import kotlin.io.path.*
@@ -83,9 +84,41 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         installFonts()
     }
 
+    /**
+     * Converts all text files in a given directory and its subdirectories
+     * from Unix-style (LF) to Windows-style (CRLF) line endings.
+     *
+     * @param directoryPath The path to the directory to convert.
+     */
+    private fun convertDirectoryToWindowsLineEndings(directoryPath: String) {
+        val directory = File(directoryPath)
+
+        if (!directory.exists() || !directory.isDirectory) {
+            println("Error: Provided path is not a valid directory.")
+            return
+        }
+
+        println("CRLF conversion: ${directory.absolutePath}")
+
+        val extensions = setOf("smali", "xml", "txt")
+        val regex = Regex("(?<!\r)\n")
+        directory.walk()
+            .filter { it.isFile }
+            .filter { it.extension in extensions }
+            .forEach { file ->
+                try {
+                    val originalContent = file.readText()
+                    val windowsContent = originalContent.replace(regex, "\r\n")
+                    file.writeText(windowsContent)
+                } catch (e: IOException) {
+                    System.err.println("Failed to process file ${file.name}: ${e.message}")
+                }
+            }
+    }
+
     private fun downloadDiscordApk() {
         val out = config.getStockDiscordCompiledApkFile()
-        if (out.exists()) return
+        if (out.exists() && out.length() > 10_000) return
 
         println("The base Discord APK needs to be downloaded for patching.")
         println("Would you like to do so now? (y/n)")
@@ -124,8 +157,14 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
             LOG.debug("Stock APK already decompiled, skipping decompilation")
         } else {
             LOG.info("Decompiling stock Discord APK... (This could take a while)")
-            holder.decompileApk(config.getStockDiscordCompiledApkFile(), decompileOutput, true).exitOnFailure("Stock Decompile")
+            holder.decompileApk(
+                apkInFile = config.getStockDiscordCompiledApkFile(),
+                decompiledOutputDir = decompileOutput,
+                keepDebugInfo = true,
+                useLegacy = true
+            ).exitOnFailure("Stock Decompile")
             installFonts(true)
+            convertDirectoryToWindowsLineEndings(decompileOutput.absolutePath)
         }
     }
 
@@ -148,6 +187,7 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         )
 
         if (test != EQUAL) {
+            // stockApk.toFile().deleteRecursively()
             LOG.error("The stock decompiled APK or the bluecord APK is invalid.\n\n" +
                     "The likely cause is that one of them was decompiled with --no-debug-info. " +
                     "Check the files and try again.")
@@ -202,11 +242,15 @@ class DiffPatcher(private val config: Config, private val holder: ExecutableHold
         if (bluecordFile.name in Constants.IGNORED_PATCH_FILES) {
             return
         }
-        val stockFile: Path = stockApk.resolve(bluecordModdedApk.relativize(bluecordFile))
+        if (bluecordFile.name.endsWith(".9.png")) {
+            return
+        }
+        val stockFile = stockApk.resolve(bluecordModdedApk.relativize(bluecordFile))
+        if (stockFile.name.endsWith(".9.png")) {
+            return
+        }
 
-        val compareResult = compare(stockFile, bluecordFile)
-
-        when (compareResult) {
+        when (val compareResult = compare(stockFile, bluecordFile)) {
             EQUAL -> {} // nothing to do
             NOT_EQUAL, STOCK_FILE_NOT_EXISTS -> {
                 LOG.debug("Different: {} {} to {}", compareResult, stockFile, bluecordFile)
